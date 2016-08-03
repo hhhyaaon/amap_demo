@@ -12,9 +12,14 @@ export default class Map extends React.Component {
             map: null,
             maker: []
         }
+        //加载amap sdk
+        Core.insert({
+            name: "amap",
+            src: "http://webapi.amap.com/maps?v=1.3&key=38dbfac589d262c87bd3aaba70038538&callback=init"
+        })
     }
     componentWillReceiveProps(nextProps) {
-        //合并、校验cfg
+        //todo 合并、校验cfg
         const {map, maker} = this.state;
         //初始化地图
         //const map = this.initMap(map_id, nextProps);
@@ -25,11 +30,9 @@ export default class Map extends React.Component {
         this.initMaker(map, nextProps.maker);
     }
     componentDidMount() {
-        //加载amap sdk
-        Core.insert({
-            name: "amap",
-            src: "http://webapi.amap.com/maps?v=1.3&key=38dbfac589d262c87bd3aaba70038538"
-        }, () => {
+        window.init = function () {
+
+            console.log("加载完毕！！", arguments);
             //初始化amap
             if (!window.AMap) {
                 console.error("AMap is required");
@@ -40,10 +43,12 @@ export default class Map extends React.Component {
                 //初始化定位点
                 const maker = this.initMaker(map, this.props.maker);
             }
-        })
+        }.bind(this, "a");
     }
     componentWillUnmount() {
         //卸载sdk
+        Core.remove("amap");
+        window.AMap = null;
     }
     render() {
         const {map_id} = this.state;
@@ -109,7 +114,10 @@ Map.defaultProps = {
     //中心点
     center: [116.39, 39.9],
     //...
-    maker: []
+    maker: [],
+    plugin: [
+
+    ]
 }
 
 

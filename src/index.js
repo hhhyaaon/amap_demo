@@ -13,11 +13,13 @@ export default class App extends React.Component {
         return (
             <div>
                 <Demo1/>
+                <Demo1/>
             </div>
         )
     }
 }
 
+//更加经纬度设置定位点
 class Demo1 extends React.Component {
     constructor(props) {
         super(props);
@@ -65,7 +67,6 @@ class Demo1 extends React.Component {
         )
     }
     onChangeLong() {
-        console.log("xx");
         this.setState({
             long: Number(this.refs.d1_long.value)
         })
