@@ -29,9 +29,9 @@ class Demo1 extends React.Component {
     }
     componentWillReceiveProps(next) {
         if (Object.getOwnPropertyNames(this.props.plugin != null).length != 0) return;
-        const {plugin} = next;
+        const {plugin, service} = next;
         this.getLocation(plugin.Geolocation);
-
+        this.getAddress(service.Geocoder);
     }
     render() {
         const {lng, lat} = this.state;
@@ -98,8 +98,20 @@ class Demo1 extends React.Component {
             console.error(info);
         });//返回定位出错信息
     }
-    getAddress() {
-
+    getAddress(coder) {
+        console.log("xxxxx");
+        coder.getAddress(new window.AMap.LngLat(112.752686, 37.692514), function (status, result) {
+            //根据服务请求状态处理返回结果
+            if (status == 'error') {
+                alert("服务请求出错啦！ ");
+            }
+            if (status == 'no_data') {
+                alert("无数据返回，请换个关键字试试～～");
+            }
+            else {
+                console.warn(result);
+            }
+        });
     }
 }
 
@@ -122,15 +134,15 @@ Demo1 = Map.plugin([
     }
 ])(Demo1);
 
-// //注册服务
-// Demo1 = Map.service([
-//     {
-//         name: "Geocoder",
-//         cfg: {
-//             radius: 1000,
-//             extensions: "all"
-//         }
-//     }
-// ])(Demo1);
+//注册服务
+Demo1 = Map.service([
+    {
+        name: "Geocoder",
+        cfg: {
+            radius: 1000,
+            extensions: "all"
+        }
+    }
+])(Demo1);
 
 ReactDOM.render(<App/>, document.getElementById("app"));

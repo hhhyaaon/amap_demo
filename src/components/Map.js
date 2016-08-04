@@ -32,23 +32,25 @@ class Map extends React.Component {
         this.initMaker(map, nextProps.maker);
     }
     componentDidMount() {
-        window.init = function () {
+        window.init = () => {
             //初始化amap
             if (!window.AMap) {
                 console.error("AMap is required");
             } else {
                 const {map_id} = this.state;
-                const {pluginCb} = this.context;
+                const {pluginCb, serviceCb} = this.context;
                 //初始化地图
                 const map = this.initMap(map_id, this.props);
                 //初始化定位点
                 const maker = this.initMaker(map, this.props.maker);
 
+                debugger;
                 //初始化插件
                 pluginCb.call(this, map);
-
+                //初始化服务
+                serviceCb.call(this, map);
             }
-        }.bind(this, "a");
+        };
     }
     componentWillUnmount() {
         //卸载sdk
@@ -156,6 +158,51 @@ Map.plugin = (plugins) => {
                 map.plugin(`AMap.${plugin.name}`, () => {
                     const p = new window.AMap[plugin.name](plugin.cfg);
                     istObj[plugin.name] = p;
+                })
+            });
+            this.setState({
+                ist: istObj
+            });
+        }
+    });
+}
+
+Map.service = (services) => {
+    const PLUGINS = [
+        "MapType", "OverView", "Scale", "ToolBar", "Geolocation",
+        "MouseTool", "CircleEditor", "Circle", "PolyEditor", "Hotspot",
+        "MarkerClusterer", "Heatmap", "RangingTool", "DragRoute", "PlaceSearchLayer",
+        "CustomLayer", "AdvancedInfoWindow"
+    ];
+    return (Component) => React.createClass({
+        getInitialState() {
+            return {
+                ist: {}
+            }
+        },
+        propTypes: {
+            serviceCb: PropTypes.func
+        },
+        childContextTypes: {
+            serviceCb: PropTypes.func
+        },
+        getChildContext(a) {
+            return {
+                serviceCb: this._getService
+            }
+        },
+        render() {
+            return <Component
+                {...this.props}
+                service={this.state.ist}/>
+        },
+        //获取已注册服务的实例
+        _getService(map) {
+            const istObj = {};
+            services.map(service => {
+                map.service(`AMap.${service.name}`, () => {
+                    const p = new window.AMap[service.name](service.cfg);
+                    istObj[service.name] = p;
                 })
             });
             this.setState({
