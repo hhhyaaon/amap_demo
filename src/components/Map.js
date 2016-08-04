@@ -1,10 +1,10 @@
-import React from "react"
+import React, {PropTypes} from "react"
 import ReactDOM from "react-dom"
 import Core from "../utils/core.js"
 
 import Maker from "./Maker.js"
 
-export default class Map extends React.Component {
+class Map extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -16,8 +16,10 @@ export default class Map extends React.Component {
         Core.insert({
             name: "amap",
             src: "http://webapi.amap.com/maps?v=1.3&key=38dbfac589d262c87bd3aaba70038538&callback=init"
-        })
+        });
+
     }
+
     componentWillReceiveProps(nextProps) {
         //todo 合并、校验cfg
         const {map, maker} = this.state;
@@ -31,17 +33,21 @@ export default class Map extends React.Component {
     }
     componentDidMount() {
         window.init = function () {
-
-            console.log("加载完毕！！", arguments);
             //初始化amap
             if (!window.AMap) {
                 console.error("AMap is required");
             } else {
                 const {map_id} = this.state;
+                const {plugins, callback} = this.context;
                 //初始化地图
                 const map = this.initMap(map_id, this.props);
                 //初始化定位点
                 const maker = this.initMaker(map, this.props.maker);
+                console.log("this.context", this.context);
+
+                //初始化插件
+                this.initPlugins(map, plugins, callback);
+
             }
         }.bind(this, "a");
     }
@@ -51,6 +57,7 @@ export default class Map extends React.Component {
         window.AMap = null;
     }
     render() {
+
         const {map_id} = this.state;
         const {width, height, maker} = this.props;
         //样式
@@ -104,7 +111,68 @@ export default class Map extends React.Component {
             maker = null;
         }
     }
+
+    //初始化插件
+    initPlugins(map, plugins, cb) {
+        const istObj = {};
+        plugins.map(plugin => {
+            map.plugin(`AMap.${plugin.name}`, () => {
+                const p = new window.AMap[plugin.name](plugin.cfg);
+                istObj[plugin.name] = p;
+            })
+        });
+        if (typeof cb === "function") {
+            cb.call(this, map, istObj);
+        }
+    }
 }
+
+Map.contextTypes = {
+    plugins: PropTypes.array,
+    callback: PropTypes.func
+}
+
+
+
+
+Map.plugin = (plaugins, cb) => {
+    const PLUGINS = [
+        "MapType", "OverView", "Scale", "ToolBar", "Geolocation",
+        "MouseTool", "CircleEditor", "Circle", "PolyEditor", "Hotspot",
+        "MarkerClusterer", "Heatmap", "RangingTool", "DragRoute", "PlaceSearchLayer",
+        "CustomLayer", "AdvancedInfoWindow"
+    ];
+
+    // if (PLUGINS.filter(n => n === name).length === 0) {
+    //     console.error("[Map] plugin name is not exsist");
+    //     return;
+    // }
+
+    return (Component) => React.createClass({
+        propTypes: {
+            plugins: PropTypes.array,
+            callback: PropTypes.func
+        },
+        childContextTypes: {
+            plugins: PropTypes.array,
+            callback: PropTypes.func
+        },
+        getChildContext(a) {
+            return {
+                plugins: plaugins,
+                callback: cb
+            }
+        },
+        render() {
+            const cfg = {
+                plugins: plaugins,
+                callback: cb
+            };
+            return <Component {...cfg}/>
+        }
+    });
+}
+
 
 Map.defaultProps = {
     width: 500,
@@ -115,9 +183,8 @@ Map.defaultProps = {
     center: [116.39, 39.9],
     //...
     maker: [],
-    plugin: [
-
-    ]
+    plugin: []
 }
 
 
+export default Map;
