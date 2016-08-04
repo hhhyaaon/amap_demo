@@ -22,9 +22,9 @@ class Map extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         //todo 合并、校验cfg
-        const {map, maker} = this.state;
+        const {map_id, maker} = this.state;
         //初始化地图
-        //const map = this.initMap(map_id, nextProps);
+        const map = this.initMap(map_id, nextProps);
         //重置定位点
         maker.map(m => {
             this.removeMaker(m);
@@ -38,15 +38,14 @@ class Map extends React.Component {
                 console.error("AMap is required");
             } else {
                 const {map_id} = this.state;
-                const {plugins, callback} = this.context;
+                const {pluginCb} = this.context;
                 //初始化地图
                 const map = this.initMap(map_id, this.props);
                 //初始化定位点
                 const maker = this.initMaker(map, this.props.maker);
-                console.log("this.context", this.context);
 
                 //初始化插件
-                this.initPlugins(map, plugins, callback);
+                pluginCb.call(this, map);
 
             }
         }.bind(this, "a");
@@ -112,63 +111,56 @@ class Map extends React.Component {
         }
     }
 
-    //初始化插件
-    initPlugins(map, plugins, cb) {
-        const istObj = {};
-        plugins.map(plugin => {
-            map.plugin(`AMap.${plugin.name}`, () => {
-                const p = new window.AMap[plugin.name](plugin.cfg);
-                istObj[plugin.name] = p;
-            })
-        });
-        if (typeof cb === "function") {
-            cb.call(this, map, istObj);
-        }
-    }
 }
 
 Map.contextTypes = {
-    plugins: PropTypes.array,
-    callback: PropTypes.func
+    pluginCb: PropTypes.func
 }
 
 
 
 
-Map.plugin = (plaugins, cb) => {
+Map.plugin = (plugins) => {
     const PLUGINS = [
         "MapType", "OverView", "Scale", "ToolBar", "Geolocation",
         "MouseTool", "CircleEditor", "Circle", "PolyEditor", "Hotspot",
         "MarkerClusterer", "Heatmap", "RangingTool", "DragRoute", "PlaceSearchLayer",
         "CustomLayer", "AdvancedInfoWindow"
     ];
-
-    // if (PLUGINS.filter(n => n === name).length === 0) {
-    //     console.error("[Map] plugin name is not exsist");
-    //     return;
-    // }
-
     return (Component) => React.createClass({
+        getInitialState() {
+            return {
+                ist: {}
+            }
+        },
         propTypes: {
-            plugins: PropTypes.array,
-            callback: PropTypes.func
+            pluginCb: PropTypes.func
         },
         childContextTypes: {
-            plugins: PropTypes.array,
-            callback: PropTypes.func
+            pluginCb: PropTypes.func
         },
         getChildContext(a) {
             return {
-                plugins: plaugins,
-                callback: cb
+                pluginCb: this._getPlugins
             }
         },
         render() {
-            const cfg = {
-                plugins: plaugins,
-                callback: cb
-            };
-            return <Component {...cfg}/>
+            return <Component
+                {...this.props}
+                plugin={this.state.ist}/>
+        },
+        //获取已注册组件的实例
+        _getPlugins(map) {
+            const istObj = {};
+            plugins.map(plugin => {
+                map.plugin(`AMap.${plugin.name}`, () => {
+                    const p = new window.AMap[plugin.name](plugin.cfg);
+                    istObj[plugin.name] = p;
+                })
+            });
+            this.setState({
+                ist: istObj
+            });
         }
     });
 }

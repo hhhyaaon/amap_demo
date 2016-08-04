@@ -23,21 +23,26 @@ class Demo1 extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            long: 116.452961,
+            lng: 116.452961,
             lat: 39.917553
         }
-        console.warn("this.props", this.props);
+    }
+    componentWillReceiveProps(next) {
+        if (Object.getOwnPropertyNames(this.props.plugin != null).length != 0) return;
+        const {plugin} = next;
+        this.getLocation(plugin.Geolocation);
+
     }
     render() {
-        const {long, lat} = this.state;
+        const {lng, lat} = this.state;
         const makers = [
             {
-                position: [long, lat]
+                position: [lng, lat]
             }
         ]
         const cfg = {
             zoom: 17,
-            center: [116.452961, 39.917553],
+            center: [lng, lat],
             maker: makers
         }
         return (
@@ -50,7 +55,7 @@ class Demo1 extends React.Component {
                             type="number"
                             step={0.01}
                             ref="d1_long"
-                            value={long}
+                            value={lng}
                             onChange={this.onChangeLong.bind(this) }/>
                     </li>
                     <li>
@@ -63,13 +68,16 @@ class Demo1 extends React.Component {
                             onChange={this.onChangeLat.bind(this) }/>
                     </li>
                 </ul>
-                <Map {...cfg}/>
+                <Map
+                    {...cfg}
+                    plugins={this.props}
+                    callback={this.props}/>
             </div>
         )
     }
     onChangeLong() {
         this.setState({
-            long: Number(this.refs.d1_long.value)
+            lng: Number(this.refs.d1_long.value)
         })
     }
     onChangeLat() {
@@ -77,9 +85,25 @@ class Demo1 extends React.Component {
             lat: Number(this.refs.d1_lat.value)
         })
     }
+    getLocation(geo) {
+        geo.getCurrentPosition();
+        window.AMap.event.addListener(geo, 'complete', (info) => {
+            console.log("定位结果：", info);
+            this.setState({
+                lng: info.position.lng,
+                lat: info.position.lat
+            })
+        });//返回定位信息
+        window.AMap.event.addListener(geo, 'error', (info) => {
+            console.error(info);
+        });//返回定位出错信息
+    }
+    getAddress() {
+
+    }
 }
 
-
+//注册插件
 Demo1 = Map.plugin([
     {
         name: "Geolocation",
@@ -96,16 +120,17 @@ Demo1 = Map.plugin([
             zoomToAccuracy: true      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
         }
     }
-], (map, ist) => {
-    const Geolocation = ist.Geolocation;
-    Geolocation.getCurrentPosition();
-    window.AMap.event.addListener(Geolocation, 'complete', (info) => {
-        console.log("定位结果：", info);
-    });//返回定位信息
-    window.AMap.event.addListener(Geolocation, 'error', (info) => {
-        console.error(info);
-    });//返回定位出错信息
-})(Demo1);
+])(Demo1);
 
+// //注册服务
+// Demo1 = Map.service([
+//     {
+//         name: "Geocoder",
+//         cfg: {
+//             radius: 1000,
+//             extensions: "all"
+//         }
+//     }
+// ])(Demo1);
 
 ReactDOM.render(<App/>, document.getElementById("app"));
