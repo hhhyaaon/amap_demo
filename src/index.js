@@ -23,25 +23,29 @@ class Demo1 extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            lng: 116.452961,
-            lat: 39.917553
+            lng: 116.397,
+            lat: 39.908,
+            address: ""
         }
     }
     componentWillReceiveProps(next) {
-        if (Object.getOwnPropertyNames(this.props.plugin != null).length != 0) return;
         const {plugin, service} = next;
+        //if (Object.getOwnPropertyNames(this.props.plugin).length === 0) {
         this.getLocation(plugin.Geolocation);
+        //}
+        //if (Object.getOwnPropertyNames(this.props.service).length === 0) {
         this.getAddress(service.Geocoder);
+        //}
     }
     render() {
-        const {lng, lat} = this.state;
+        const {lng, lat, address} = this.state;
         const makers = [
             {
                 position: [lng, lat]
             }
         ]
         const cfg = {
-            zoom: 17,
+            zoom: 15,
             center: [lng, lat],
             maker: makers
         }
@@ -53,7 +57,7 @@ class Demo1 extends React.Component {
                         <label>经度：</label>
                         <input
                             type="number"
-                            step={0.01}
+                            step={0.0001}
                             ref="d1_long"
                             value={lng}
                             onChange={this.onChangeLong.bind(this) }/>
@@ -62,10 +66,13 @@ class Demo1 extends React.Component {
                         <label>纬度：</label>
                         <input
                             type="number"
-                            step={0.01}
+                            step={0.0001}
                             ref="d1_lat"
                             value={lat}
                             onChange={this.onChangeLat.bind(this) }/>
+                    </li>
+                    <li>
+                        <div>{address}</div>
                     </li>
                 </ul>
                 <Map
@@ -99,8 +106,7 @@ class Demo1 extends React.Component {
         });//返回定位出错信息
     }
     getAddress(coder) {
-        console.log("xxxxx");
-        coder.getAddress(new window.AMap.LngLat(112.752686, 37.692514), function (status, result) {
+        coder.getAddress(new window.AMap.LngLat(112.752686, 37.692514), (status, result) => {
             //根据服务请求状态处理返回结果
             if (status == 'error') {
                 alert("服务请求出错啦！ ");
@@ -109,7 +115,9 @@ class Demo1 extends React.Component {
                 alert("无数据返回，请换个关键字试试～～");
             }
             else {
-                console.warn(result);
+                this.setState({
+                    address: result.regeocode.formattedAddress || ""
+                })
             }
         });
     }
@@ -134,15 +142,15 @@ Demo1 = Map.plugin([
     }
 ])(Demo1);
 
-//注册服务
-Demo1 = Map.service([
-    {
-        name: "Geocoder",
-        cfg: {
-            radius: 1000,
-            extensions: "all"
-        }
-    }
-])(Demo1);
+// //注册服务
+// Demo1 = Map.service([
+//     {
+//         name: "Geocoder",
+//         cfg: {
+//             radius: 1000,
+//             extensions: "all"
+//         }
+//     }
+// ])(Demo1);
 
 ReactDOM.render(<App/>, document.getElementById("app"));

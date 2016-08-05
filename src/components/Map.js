@@ -44,7 +44,8 @@ class Map extends React.Component {
                 //初始化定位点
                 const maker = this.initMaker(map, this.props.maker);
 
-                debugger;
+
+
                 //初始化插件
                 pluginCb.call(this, map);
                 //初始化服务
@@ -116,7 +117,8 @@ class Map extends React.Component {
 }
 
 Map.contextTypes = {
-    pluginCb: PropTypes.func
+    pluginCb: PropTypes.func,
+    serviceCb: PropTypes.func
 }
 
 
@@ -141,7 +143,7 @@ Map.plugin = (plugins) => {
         childContextTypes: {
             pluginCb: PropTypes.func
         },
-        getChildContext(a) {
+        getChildContext() {
             return {
                 pluginCb: this._getPlugins
             }
@@ -186,7 +188,7 @@ Map.service = (services) => {
         childContextTypes: {
             serviceCb: PropTypes.func
         },
-        getChildContext(a) {
+        getChildContext() {
             return {
                 serviceCb: this._getService
             }
@@ -199,10 +201,10 @@ Map.service = (services) => {
         //获取已注册服务的实例
         _getService(map) {
             const istObj = {};
-            services.map(service => {
-                map.service(`AMap.${service.name}`, () => {
-                    const p = new window.AMap[service.name](service.cfg);
-                    istObj[service.name] = p;
+            var a = services.map(service => {
+                window.AMap.service([`AMap.${service.name}`], () => {
+                    const s = new window.AMap[service.name](service.cfg);
+                    istObj[service.name] = s;
                 })
             });
             this.setState({
@@ -219,10 +221,9 @@ Map.defaultProps = {
     //缩放比例
     zoom: 10,
     //中心点
-    center: [116.39, 39.9],
+    center: [116.397, 39.908],
     //...
-    maker: [],
-    plugin: []
+    maker: []
 }
 
 
