@@ -44,8 +44,6 @@ class Map extends React.Component {
                 //初始化定位点
                 const maker = this.initMaker(map, this.props.maker);
 
-
-
                 //初始化插件
                 pluginCb.call(this, map);
                 //初始化服务
@@ -125,12 +123,6 @@ Map.contextTypes = {
 
 
 Map.plugin = (plugins) => {
-    const PLUGINS = [
-        "MapType", "OverView", "Scale", "ToolBar", "Geolocation",
-        "MouseTool", "CircleEditor", "Circle", "PolyEditor", "Hotspot",
-        "MarkerClusterer", "Heatmap", "RangingTool", "DragRoute", "PlaceSearchLayer",
-        "CustomLayer", "AdvancedInfoWindow"
-    ];
     return (Component) => React.createClass({
         getInitialState() {
             return {
@@ -170,12 +162,6 @@ Map.plugin = (plugins) => {
 }
 
 Map.service = (services) => {
-    const PLUGINS = [
-        "MapType", "OverView", "Scale", "ToolBar", "Geolocation",
-        "MouseTool", "CircleEditor", "Circle", "PolyEditor", "Hotspot",
-        "MarkerClusterer", "Heatmap", "RangingTool", "DragRoute", "PlaceSearchLayer",
-        "CustomLayer", "AdvancedInfoWindow"
-    ];
     return (Component) => React.createClass({
         getInitialState() {
             return {

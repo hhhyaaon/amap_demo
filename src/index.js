@@ -30,15 +30,16 @@ class Demo1 extends React.Component {
     }
     componentWillReceiveProps(next) {
         const {plugin, service} = next;
-        //if (Object.getOwnPropertyNames(this.props.plugin).length === 0) {
-        this.getLocation(plugin.Geolocation);
-        //}
+        // if (Object.getOwnPropertyNames(this.props.plugin).length === 0) {
+        //     this.getLocation(plugin.Geolocation);
+        // }
         //if (Object.getOwnPropertyNames(this.props.service).length === 0) {
-        this.getAddress(service.Geocoder);
+        //this.getAddress(service.Geocoder);
         //}
     }
     render() {
         const {lng, lat, address} = this.state;
+        const {plugin} = this.props;
         const makers = [
             {
                 position: [lng, lat]
@@ -72,13 +73,11 @@ class Demo1 extends React.Component {
                             onChange={this.onChangeLat.bind(this) }/>
                     </li>
                     <li>
-                        <div>{address}</div>
+                        <button onClick={this.getLocation.bind(this, plugin.Geolocation) }>定位</button>
                     </li>
                 </ul>
                 <Map
-                    {...cfg}
-                    plugins={this.props}
-                    callback={this.props}/>
+                    {...cfg}/>
             </div>
         )
     }
@@ -105,22 +104,22 @@ class Demo1 extends React.Component {
             console.error(info);
         });//返回定位出错信息
     }
-    getAddress(coder) {
-        coder.getAddress(new window.AMap.LngLat(112.752686, 37.692514), (status, result) => {
-            //根据服务请求状态处理返回结果
-            if (status == 'error') {
-                alert("服务请求出错啦！ ");
-            }
-            if (status == 'no_data') {
-                alert("无数据返回，请换个关键字试试～～");
-            }
-            else {
-                this.setState({
-                    address: result.regeocode.formattedAddress || ""
-                })
-            }
-        });
-    }
+    // getAddress(coder) {
+    //     coder.getAddress(new window.AMap.LngLat(112.752686, 37.692514), (status, result) => {
+    //         //根据服务请求状态处理返回结果
+    //         if (status == 'error') {
+    //             alert("服务请求出错啦！ ");
+    //         }
+    //         if (status == 'no_data') {
+    //             alert("无数据返回，请换个关键字试试～～");
+    //         }
+    //         else {
+    //             this.setState({
+    //                 address: result.regeocode.formattedAddress || ""
+    //             })
+    //         }
+    //     });
+    // }
 }
 
 //注册插件
